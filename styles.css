@@ -21,14 +21,14 @@ canvas {
 
 .popup {
     position: absolute;
-    background: rgba(255, 255, 255, 0.9);
-    opacity: 0.9;
-    padding: 25px;
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.9); /* Background with 0.9 opacity */
+    padding: 15px;
+    border-radius: 15px; /* Updated border-radius */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     pointer-events: none;
-    transition: opacity 1s ease-in-out;
+    transition: opacity 0.3s ease-in-out;
     display: none; /* Initially hidden */
+    max-width: 300px; /* Set maximum width */
 }
 
 .popup.show {
@@ -44,4 +44,27 @@ canvas {
     font-size: 16px;
     color: grey;
     cursor: pointer;
+}
+
+.profile {
+    display: flex;
+    align-items: center;
+}
+
+.profile-pic {
+    width: 800px; /* Updated width */
+    height: 150px; /* Updated height */
+    border-radius: 50%;
+    margin-left: -45px; /* Updated margin */
+    margin-right: 25px;
+}
+
+.profile-info h1 {
+    margin: 0;
+    font-size: 1.2em;
+}
+
+.profile-info p {
+    margin: 5px 0 0 0;
+    font-size: 0.9em;
 }

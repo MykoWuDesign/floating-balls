@@ -7,6 +7,7 @@ const interactivePoints = [];
 const backgroundPoints = [];
 const popups = document.querySelectorAll('.popup');
 const closeButtons = document.querySelectorAll('.close-btn');
+const ripples = [];
 
 let hoveredPoint = null;
 
@@ -100,6 +101,7 @@ const animate = () => {
     drawLines(backgroundPoints, 0.5); // Adding lines for background points with reduced opacity
     drawPoints(backgroundPoints);
     drawPoints(interactivePoints);
+    drawRipples();
     requestAnimationFrame(animate);
 };
 
@@ -175,8 +177,31 @@ const closePopup = (e) => {
     e.target.closest('.popup').classList.remove('show');
 };
 
+const createRipple = (x, y) => {
+    ripples.push({ x, y, radius: 0, alpha: 0.9 });
+};
+
+const drawRipples = () => {
+    for (let i = ripples.length - 1; i >= 0; i--) {
+        const ripple = ripples[i];
+        ctx.beginPath();
+        ctx.arc(ripple.x, ripple.y, ripple.radius, 0, 2 * Math.PI);
+        ctx.strokeStyle = `rgba(255, 215, 0, ${ripple.alpha})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ripple.radius += 1.5;
+        ripple.alpha -= 0.02;
+        if (ripple.alpha <= 0) {
+            ripples.splice(i, 1);
+        }
+    }
+};
+
 canvas.addEventListener('mousemove', handleMouseOver);
-canvas.addEventListener('click', handlePopup);
+canvas.addEventListener('click', (e) => {
+    handlePopup(e);
+    createRipple(e.clientX, e.clientY);
+});
 
 // Add event listeners to close buttons
 closeButtons.forEach(button => {
