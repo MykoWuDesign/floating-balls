@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Alata&display=swap');
+
+body, html {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    font-family: 'Alata', sans-serif;
+    background: #f7f7f7;
+    cursor: default;
+}
+
+.container {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+canvas {
+    display: block;
+}
+
+.popup {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.9);
+    opacity: 0.9;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    pointer-events: none;
+    transition: opacity 1s ease-in-out;
+    display: none; /* Initially hidden */
+}
+
+.popup.show {
+    opacity: 1;
+    pointer-events: auto;
+    display: block; /* Show when the 'show' class is added */
+}
+
+.close-btn {
+    position: absolute;
+    top: 5px;
+    right: 10px;
+    font-size: 16px;
+    color: grey;
+    cursor: pointer;
+}
