@@ -27,8 +27,10 @@ const createPoints = () => {
             originalVx: null,
             originalVy: null,
             size: 15, // 1.5x bigger size (10 * 1.5)
+            targetSize: 15, // For smooth transitions
             hitRadius: 30, // Larger clickable area
-            isInteractive: true
+            isInteractive: true,
+            isExpanded: false, // Track if the point is expanded
         });
     }
     for (let i = 0; i < 25; i++) { // Creating 25 non-interactive balls
@@ -83,6 +85,10 @@ const drawPoints = (points) => {
             ctx.shadowColor = 'transparent';
             ctx.shadowBlur = 0;
         }
+
+        // Smooth size transition
+        point.size += (point.targetSize - point.size) * 0.1;
+
         ctx.beginPath();
         ctx.arc(point.x, point.y, point.size, 0, 2 * Math.PI);
         ctx.fill();
@@ -129,15 +135,26 @@ const handlePopup = (e) => {
                 point.popup.style.left = `${point.x}px`;
                 point.popup.style.top = `${point.y - 50}px`;
                 point.popup.classList.add('show');
+                point.isExpanded = true;
+                point.targetSize = 45; // Expand size 3x (15 * 3)
                 clickedOnPopup = true;
             } else {
                 point.popup.classList.remove('show');
+                point.isExpanded = false;
+                point.targetSize = 15; // Reset to original size
             }
         }
     }
     if (!clickedOnPopup) {
         for (const popup of popups) {
             popup.classList.remove('show');
+        }
+        // Reset all points to original size
+        for (const point of interactivePoints) {
+            if (point.isExpanded) {
+                point.isExpanded = false;
+                point.targetSize = 15; // Reset to original size
+            }
         }
     }
 };
@@ -157,7 +174,9 @@ const handleMouseOver = (e) => {
                 point.originalVy = point.vy;
                 point.vx *= 0.1;
                 point.vy *= 0.1;
-                point.size = 22.5; // Increase the size (15 * 1.5)
+                if (!point.isExpanded) {
+                    point.targetSize = 22.5; // Increase the size (15 * 1.5)
+                }
                 pulsePoint(point); // Start pulsing
             }
         } else {
@@ -166,7 +185,9 @@ const handleMouseOver = (e) => {
                 point.vy = point.originalVy;
                 point.originalVx = null;
                 point.originalVy = null;
-                point.size = 15; // Reset the size
+                if (!point.isExpanded) {
+                    point.targetSize = 15; // Reset the size
+                }
                 stopPulse(point); // Stop pulsing
             }
         }
@@ -175,19 +196,28 @@ const handleMouseOver = (e) => {
 
 const pulsePoint = (point) => {
     point.pulsing = setInterval(() => {
-        point.size = point.size === 22.5 ? 25.5 : 22.5; // Toggle between sizes
+        if (!point.isExpanded) {
+            point.targetSize = point.targetSize === 22.5 ? 25.5 : 22.5; // Toggle between sizes
+        }
     }, 500);
 };
 
 const stopPulse = (point) => {
     clearInterval(point.pulsing);
-    point.size = 15; // Reset the size to default
+    if (!point.isExpanded) {
+        point.targetSize = 15; // Reset the size to default
+    }
 };
 
 // Function to close popups when close button is clicked
 const closePopup = (e) => {
     e.stopPropagation(); // Prevent the click from triggering handlePopup
     e.target.closest('.popup').classList.remove('show');
+    const point = interactivePoints.find(p => p.popup === e.target.closest('.popup'));
+    if (point) {
+        point.isExpanded = false;
+        point.targetSize = 15; // Reset to original size
+    }
 };
 
 const createRipple = (x, y) => {

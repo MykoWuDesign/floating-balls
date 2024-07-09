@@ -22,13 +22,13 @@ canvas {
 .popup {
     position: absolute;
     background: rgba(255, 255, 255, 0.9); /* Background with 0.9 opacity */
-    padding: 15px;
+    padding: 25px;
     border-radius: 15px; /* Updated border-radius */
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     pointer-events: none;
     transition: opacity 0.5s ease-in-out; /* Transition for fade effect */
     opacity: 0;
-    max-width: 300px; /* Set maximum width */
+    max-width: 350px; /* Set maximum width */
 }
 
 .popup.show {
@@ -39,7 +39,7 @@ canvas {
 .close-btn {
     position: absolute;
     top: 5px;
-    right: 5px;
+    right: 10px;
     font-size: 16px;
     color: grey;
     cursor: pointer;
