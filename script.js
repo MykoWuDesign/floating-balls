@@ -11,17 +11,23 @@ const ripples = [];
 
 let hoveredPoint = null;
 
+const centerX = canvas.width / 2;
+const centerY = canvas.height / 2;
+const halfWidth = canvas.width * 0.375; // 75% of the viewport width
+const halfHeight = canvas.height * 0.375; // 75% of the viewport height
+
 const createPoints = () => {
     for (let i = 0; i < 5; i++) {
         interactivePoints.push({
-            x: Math.random() * canvas.width,
-            y: Math.random() * canvas.height,
+            x: centerX - halfWidth / 2 + Math.random() * halfWidth,
+            y: centerY - halfHeight / 2 + Math.random() * halfHeight,
             vx: (Math.random() * 2 - 1) * 0.5, // Slower movement
             vy: (Math.random() * 2 - 1) * 0.5, // Slower movement
             popup: popups[i],
             originalVx: null,
             originalVy: null,
             size: 15, // 1.5x bigger size (10 * 1.5)
+            hitRadius: 30, // Larger clickable area
             isInteractive: true
         });
     }
@@ -88,8 +94,15 @@ const updatePoints = (points) => {
     for (const point of points) {
         point.x += point.vx;
         point.y += point.vy;
-        if (point.x < 0 || point.x > canvas.width) point.vx *= -1;
-        if (point.y < 0 || point.y > canvas.height) point.vy *= -1;
+        if (point.isInteractive) {
+            // Constrain interactive points to the central area
+            if (point.x < centerX - halfWidth / 2 || point.x > centerX + halfWidth / 2) point.vx *= -1;
+            if (point.y < centerY - halfHeight / 2 || point.y > centerY + halfHeight / 2) point.vy *= -1;
+        } else {
+            // Allow non-interactive points to move freely
+            if (point.x < 0 || point.x > canvas.width) point.vx *= -1;
+            if (point.y < 0 || point.y > canvas.height) point.vy *= -1;
+        }
     }
 };
 
@@ -112,7 +125,7 @@ const handlePopup = (e) => {
     for (const point of interactivePoints) {
         if (point.popup) {
             const distance = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2));
-            if (distance < 10) {
+            if (distance < point.hitRadius) { // Use hitRadius for click detection
                 point.popup.style.left = `${point.x}px`;
                 point.popup.style.top = `${point.y - 50}px`;
                 point.popup.classList.add('show');
@@ -136,7 +149,7 @@ const handleMouseOver = (e) => {
     hoveredPoint = null;
     for (const point of interactivePoints) {
         const distance = Math.sqrt(Math.pow(point.x - x, 2) + Math.pow(point.y - y, 2));
-        if (distance < 20) {
+        if (distance < point.hitRadius) { // Use hitRadius for hover detection
             canvas.style.cursor = 'pointer';
             hoveredPoint = point;
             if (point.originalVx === null && point.originalVy === null) {
