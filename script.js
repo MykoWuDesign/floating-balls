@@ -16,12 +16,12 @@ const createPoints = () => {
         interactivePoints.push({
             x: Math.random() * canvas.width,
             y: Math.random() * canvas.height,
-            vx: Math.random() * 2 - 1,
-            vy: Math.random() * 2 - 1,
+            vx: (Math.random() * 2 - 1) * 0.5, // Slower movement
+            vy: (Math.random() * 2 - 1) * 0.5, // Slower movement
             popup: popups[i],
             originalVx: null,
             originalVy: null,
-            size: 10,
+            size: 15, // 1.5x bigger size (10 * 1.5)
             isInteractive: true
         });
     }
@@ -144,7 +144,7 @@ const handleMouseOver = (e) => {
                 point.originalVy = point.vy;
                 point.vx *= 0.1;
                 point.vy *= 0.1;
-                point.size = 15; // Increase the size
+                point.size = 22.5; // Increase the size (15 * 1.5)
                 pulsePoint(point); // Start pulsing
             }
         } else {
@@ -153,7 +153,7 @@ const handleMouseOver = (e) => {
                 point.vy = point.originalVy;
                 point.originalVx = null;
                 point.originalVy = null;
-                point.size = 10; // Reset the size
+                point.size = 15; // Reset the size
                 stopPulse(point); // Stop pulsing
             }
         }
@@ -162,13 +162,13 @@ const handleMouseOver = (e) => {
 
 const pulsePoint = (point) => {
     point.pulsing = setInterval(() => {
-        point.size = point.size === 15 ? 17 : 15; // Toggle between sizes
+        point.size = point.size === 22.5 ? 25.5 : 22.5; // Toggle between sizes
     }, 500);
 };
 
 const stopPulse = (point) => {
     clearInterval(point.pulsing);
-    point.size = 10; // Reset the size to default
+    point.size = 15; // Reset the size to default
 };
 
 // Function to close popups when close button is clicked
@@ -178,7 +178,7 @@ const closePopup = (e) => {
 };
 
 const createRipple = (x, y) => {
-    ripples.push({ x, y, radius: 0, alpha: 0.9 });
+    ripples.push({ x, y, radius: 0, alpha: 1 });
 };
 
 const drawRipples = () => {
@@ -187,9 +187,9 @@ const drawRipples = () => {
         ctx.beginPath();
         ctx.arc(ripple.x, ripple.y, ripple.radius, 0, 2 * Math.PI);
         ctx.strokeStyle = `rgba(255, 215, 0, ${ripple.alpha})`;
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 2;
         ctx.stroke();
-        ripple.radius += 1.5;
+        ripple.radius += 2;
         ripple.alpha -= 0.02;
         if (ripple.alpha <= 0) {
             ripples.splice(i, 1);
