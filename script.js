@@ -10,6 +10,8 @@ const closeButtons = document.querySelectorAll('.close-btn');
 const ripples = [];
 
 let hoveredPoint = null;
+let cursorX = -1;
+let cursorY = -1;
 
 const centerX = canvas.width / 2;
 const centerY = canvas.height / 2;
@@ -26,7 +28,7 @@ const createPoints = () => {
             popup: popups[i],
             originalVx: null,
             originalVy: null,
-            size: 15, // 1.5x bigger size (10 * 1.5)
+            size: 15, // Original size
             hitRadius: 30, // Larger clickable area
             isInteractive: true
         });
@@ -94,10 +96,28 @@ const updatePoints = (points) => {
     for (const point of points) {
         point.x += point.vx;
         point.y += point.vy;
+
         if (point.isInteractive) {
             // Constrain interactive points to the central area
             if (point.x < centerX - halfWidth / 2 || point.x > centerX + halfWidth / 2) point.vx *= -1;
             if (point.y < centerY - halfHeight / 2 || point.y > centerY + halfHeight / 2) point.vy *= -1;
+
+            // Stop point if it's close to the cursor
+            if (Math.abs(point.x - cursorX) < point.hitRadius && Math.abs(point.y - cursorY) < point.hitRadius) {
+                if (point.vx !== 0 || point.vy !== 0) {
+                    point.originalVx = point.vx;
+                    point.originalVy = point.vy;
+                }
+                point.vx = 0;
+                point.vy = 0;
+                point.size = 22.5; // Increase the size (15 * 1.5)
+            } else if (point.originalVx !== null && point.originalVy !== null) {
+                point.vx = point.originalVx;
+                point.vy = point.originalVy;
+                point.originalVx = null;
+                point.originalVy = null;
+                point.size = 15; // Reset the size
+            }
         } else {
             // Allow non-interactive points to move freely
             if (point.x < 0 || point.x > canvas.width) point.vx *= -1;
@@ -143,8 +163,10 @@ const handlePopup = (e) => {
 };
 
 const handleMouseOver = (e) => {
-    const x = e.clientX;
-    const y = e.clientY;
+    cursorX = e.clientX;
+    cursorY = e.clientY;
+    const x = cursorX;
+    const y = cursorY;
     canvas.style.cursor = 'default';
     hoveredPoint = null;
     for (const point of interactivePoints) {
@@ -155,10 +177,9 @@ const handleMouseOver = (e) => {
             if (point.originalVx === null && point.originalVy === null) {
                 point.originalVx = point.vx;
                 point.originalVy = point.vy;
-                point.vx *= 0.1;
-                point.vy *= 0.1;
-                point.size = 22.5; // Increase the size (15 * 1.5)
-                pulsePoint(point); // Start pulsing
+                point.vx = 0;
+                point.vy = 0;
+                point.size = 18; // Increase the size (15 * 1.5)
             }
         } else {
             if (point.originalVx !== null && point.originalVy !== null) {
@@ -167,21 +188,9 @@ const handleMouseOver = (e) => {
                 point.originalVx = null;
                 point.originalVy = null;
                 point.size = 15; // Reset the size
-                stopPulse(point); // Stop pulsing
             }
         }
     }
-};
-
-const pulsePoint = (point) => {
-    point.pulsing = setInterval(() => {
-        point.size = point.size === 22.5 ? 25.5 : 22.5; // Toggle between sizes
-    }, 500);
-};
-
-const stopPulse = (point) => {
-    clearInterval(point.pulsing);
-    point.size = 15; // Reset the size to default
 };
 
 // Function to close popups when close button is clicked
