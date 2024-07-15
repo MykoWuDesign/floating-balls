@@ -29,7 +29,7 @@ const createPoints = () => {
             originalVx: null,
             originalVy: null,
             size: 15, // Original size
-            hitRadius: 30, // Larger clickable area
+            hitRadius: 20, // Larger clickable area
             isInteractive: true
         });
     }
@@ -179,7 +179,7 @@ const handleMouseOver = (e) => {
                 point.originalVy = point.vy;
                 point.vx = 0;
                 point.vy = 0;
-                point.size = 18; // Increase the size (15 * 1.5)
+                point.size = 20; // Increase the size (15 * 1.5)
             }
         } else {
             if (point.originalVx !== null && point.originalVy !== null) {
