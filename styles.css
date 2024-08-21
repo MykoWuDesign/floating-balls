@@ -17,6 +17,11 @@ body, html {
 
 canvas {
     display: block;
+    overflow: visible;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .popup {
@@ -74,12 +79,10 @@ canvas {
     height: 80px; /* Normal height */
     transition: transform 0.3s ease-in-out; /* Smooth transition for scaling */
     cursor: pointer; /* Change cursor to pointer on hover */
-    transition: transform 0.5s, left 0.5s, top 0.5s;
-    z-index: 1; /* Default z-index */
 }
 
-.floating-image.zoomed {
-    z-index: 1000; /* Bring zoomed image to front */
+.floating-image:hover {
+    transform: scale(1.5); /* Scale up on hover */
 }
 
 .overlay {
@@ -91,12 +94,11 @@ canvas {
     transition: opacity 0.5s;
     opacity: 0;
     text-align: center;
-    z-index: 1001; /* Ensure the overlay is above the image */
+    z-index: 1000; /* Ensure the overlay is above the image */
     max-width: 500px;
 }
 
 .chat-box {
-
     border-radius: 10px;
     padding: 10px;
     margin: 10px 0;
@@ -152,6 +154,39 @@ canvas {
     cursor: pointer;
     font-family: 'Alata', sans-serif;
 }
+
+/* Dark Mode Styles */
+body.dark-mode, html.dark-mode {
+    background: #1a1a1a;
+    color: #f7f7f7;
+}
+
+.dark-mode .popup {
+    background: rgba(34, 34, 34, 0.9);
+    color: #f7f7f7;
+}
+
+.dark-mode .chat-box {
+    background: #333;
+    color: #f7f7f7;
+}
+
+.dark-mode .chat-input-container {
+    background: #444;
+}
+
+.dark-mode .send-button {
+    background: #888;
+}
+
+.dark-mode .profile-info h1, .dark-mode .profile-info p {
+    color: #f7f7f7;
+}
+
+.dark-mode canvas {
+    background: #000;
+}
+
 
 @media (max-width: 768px) {
     .popup {

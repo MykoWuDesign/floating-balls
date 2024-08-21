@@ -20,11 +20,11 @@ const halfWidth = canvas.width * 0.375;
 const halfHeight = canvas.height * 0.375;
 
 const imageUrls = [
-    'images/E_Chat_Profile.png', // Replace with your image URLs
-    'images/F_Chat_Profile.png',
-    'images/Hero_Chat_Profile.png',
-    'images/Jester_Chat_Profile.png',
-    'images/Ruler_Chat_Profile.png'
+    'images/E_Chat_Profile_Circle.png', // Replace with your image URLs
+    'images/F_Chat_Profile_Circle.png',
+    'images/Hero_Chat_Profile_Circle.png',
+    'images/Jester_Chat_Profile_Circle.png',
+    'images/Ruler_Chat_Profile_Circle.png'
 ];
 
 const descriptions = [
@@ -171,7 +171,11 @@ const drawLines = (points, opacity = 1) => {
         for (let j = i + 1; j < points.length; j++) {
             const distance = Math.sqrt(Math.pow(points[i].x - points[j].x, 2) + Math.pow(points[i].y - points[j].y, 2));
             if (distance < 300) {
-                ctx.strokeStyle = points[i].isGlowing || points[j].isGlowing ? `rgba(255, 215, 0, ${opacity})` : `rgba(204, 204, 204, ${opacity})`;
+                if (points[i].isInteractive && points[j].isInteractive) {
+                    ctx.strokeStyle = `rgba(255, 215, 0, ${opacity})`; // Yellow color for gold balls
+                } else {
+                    ctx.strokeStyle = `rgba(204, 204, 204, ${opacity})`; // Grey color for other lines
+                }
                 ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(points[i].x, points[i].y);
@@ -180,32 +184,51 @@ const drawLines = (points, opacity = 1) => {
             }
         }
     }
-    // Draw lines between gold balls and their corresponding images
+
     imageElements.forEach(({ img, point }) => {
         const imgCenterX = img.offsetLeft + img.width / 2;
         const imgCenterY = img.offsetTop + img.height / 2;
         ctx.strokeStyle = 'rgba(255, 215, 0, 1)'; // Gold color
-        ctx.lineWidth = 1.5;
+        ctx.lineWidth = 0.5;
         ctx.beginPath();
         ctx.moveTo(point.x, point.y);
         ctx.lineTo(imgCenterX, imgCenterY);
         ctx.stroke();
+        img.style.transform = `scale(${scaleFactor})`;
+
+        // Add extra connections when image is zoomed
+        if (img.dataset.zoomed === 'true') {
+            points.forEach(otherPoint => {
+                if (otherPoint !== point) {
+                    ctx.beginPath();
+                    ctx.moveTo(imgCenterX, imgCenterY);
+                    ctx.lineTo(otherPoint.x, otherPoint.y);
+                    ctx.stroke();
+                }
+            });
+        }
     });
 };
 
+
 const drawPoints = (points) => {
     for (const point of points) {
+        if (point.isInteractive) {
+            ctx.globalAlpha = 0.3; // Set transparency for gold balls
+        } else {
+            ctx.globalAlpha = 1; // No transparency for non-interactive points
+        }
+
         const gradient = ctx.createRadialGradient(point.x, point.y, point.isInteractive ? 5 : 2, point.x, point.y, point.isInteractive ? 20 : 10);
         gradient.addColorStop(0, point.isInteractive ? 'gold' : 'grey');
         gradient.addColorStop(1, point.isInteractive ? 'orange' : 'darkgrey');
         ctx.fillStyle = point.isGlowing ? 'rgba(255, 215, 0, 0.1)' : gradient;
         ctx.shadowColor = point.isGlowing ? 'rgba(255, 215, 0, 0.1)' : point === hoveredPoint ? 'rgba(255, 215, 0, 0.8)' : 'transparent';
         ctx.shadowBlur = point.isGlowing ? 20 : point === hoveredPoint ? 20 : 0;
-        ctx.globalAlpha = point.opacity || 1;
         ctx.beginPath();
         ctx.arc(point.x, point.y, point.size, 0, 2 * Math.PI);
         ctx.fill();
-        ctx.globalAlpha = 1;
+        ctx.globalAlpha = 1; // Reset globalAlpha to default
     }
 };
 
@@ -269,7 +292,7 @@ const toggleZoomImage = (img, point) => {
         img.style.transform = 'scale(1)'; // Reset the scale
         img.style.left = `${point.x - img.width / 2}px`;
         img.style.top = `${point.y - img.height + 25}px`;
-        img.style.zIndex = 1;
+        img.style.zIndex = 1001;
         img.dataset.zoomed = 'false';
         currentZoomedImage = null;
 
@@ -286,10 +309,7 @@ const toggleZoomImage = (img, point) => {
         }
         img.style.transition = 'transform 0.5s, left 0.5s, top 0.5s';
         img.style.transform = 'scale(3)'; // Adjust the scale as needed
-        img.style.left = '50%';
-        img.style.top = '50%';
-        img.style.transform = 'translate(-50%, -50%) scale(3)';
-        img.style.zIndex = 1000;
+        img.style.zIndex = 1001;
         img.dataset.zoomed = 'true';
         currentZoomedImage = { img, point };
 
@@ -322,7 +342,7 @@ const showOverlay = (img, point) => {
         overlay.style.transition = 'opacity 0.5s';
         overlay.style.opacity = 0;
         overlay.style.textAlign = 'center'; // Center align text and button
-        overlay.style.zIndex = 1001; // Ensure the overlay is above the image
+        overlay.style.zIndex = 1000; // Ensure the overlay is below the image
 
         document.body.appendChild(overlay);
 
@@ -330,7 +350,7 @@ const showOverlay = (img, point) => {
             overlay.style.opacity = 1;
         }, 0);
     } else {
-        overlay.style.zIndex = 1001; // Ensure the overlay is above the image
+        overlay.style.zIndex = 1000; // Ensure the overlay is below the image
     }
 
     overlay.style.left = `${img.offsetLeft + img.offsetWidth / 2 - overlay.offsetWidth / 2}px`;
@@ -376,8 +396,8 @@ window.sendMessage = sendMessage;
 window.handleKeyPress = handleKeyPress;
 
 const handleMouseOver = (e) => {
-    cursorX = e.clientX;
-    cursorY = e.clientY;
+    cursorX = e.clientX / scaleFactor; // Adjust for scaling
+    cursorY = e.clientY / scaleFactor; // Adjust for scaling
     canvas.style.cursor = 'default';
     hoveredPoint = null;
     interactivePoints.forEach(point => {
@@ -403,6 +423,7 @@ const handleMouseOver = (e) => {
         }
     });
 };
+
 
 const createRipple = (x, y) => {
     ripples.push({ x, y, radius: 0, alpha: 1 });
@@ -479,14 +500,30 @@ const removeNonInteractiveDot = (x, y) => {
 canvas.addEventListener('mousemove', handleMouseOver);
 canvas.addEventListener('click', handleClick);
 canvas.addEventListener('wheel', (e) => {
-    adjustSpeed(e);
+    adjustScale(e);
 });
 
-const adjustSpeed = (e) => {
+let scaleFactor = 1; // Initial scale factor
+const maxScaleFactor = 3; // Maximum scale factor
+const minScaleFactor = 0.5; // Minimum scale factor
+
+const adjustScale = (e) => {
     const delta = e.deltaY * -0.01;
-    speedFactor += delta;
-    speedFactor = Math.max(0.5, Math.min(speedFactor, maxSpeedFactor)); // Limit the speed factor between 0.5 and maxSpeedFactor
+    scaleFactor += delta;
+    scaleFactor = Math.max(minScaleFactor, Math.min(scaleFactor, maxScaleFactor)); // Limit the scale factor between minScaleFactor and maxScaleFactor
+
+    // Adjust the canvas size based on the scale factor
+    canvas.style.width = `${window.innerWidth * scaleFactor}px`;
+    canvas.style.height = `${window.innerHeight * scaleFactor}px`;
+
+    // Apply the scale factor to the canvas transform
+    canvas.style.transform = `scale(${scaleFactor})`;
+
+    // Optionally adjust the position to keep it centered or aligned
+    canvas.style.left = `${(window.innerWidth - canvas.clientWidth) / 2}px`;
+    canvas.style.top = `${(window.innerHeight - canvas.clientHeight) / 2}px`;
 };
+
 
 createPoints();
 animate();
